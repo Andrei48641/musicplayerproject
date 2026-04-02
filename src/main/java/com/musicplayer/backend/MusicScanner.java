@@ -14,8 +14,7 @@ public class MusicScanner {
         File root = new File("X:/10_MUSIC/ALBUMS/");
 
         if (!root.exists()) {
-            System.err.println(
-                    "ERROR root folder doesn't exist (check tailscale/database) " + root.getAbsolutePath());
+            System.err.println("ERROR root folder doesn't exist (check tailscale/database) " + root.getAbsolutePath());
             return;
         }
 
@@ -40,40 +39,29 @@ public class MusicScanner {
     }
 
     private static void saveToDatabase(File file) {
-        try (Connection connectionObj = DatabaseManager.getConnection()) { // init and return the connection
+        try (Connection connectionObj = DatabaseManager.getConnection()) {
             AudioFile audioFile = AudioFileIO.read(file);
-            Tag tag = audioFile.getTag(); // inside tag obj there is the metadata stored
+            Tag tag = audioFile.getTag();
 
-            String artist = tag.getFirst(FieldKey.ARTIST); // getFirst gets first value from the FieldKey
+            String artist = tag.getFirst(FieldKey.ARTIST);
             String album = tag.getFirst(FieldKey.ALBUM);
             String title = tag.getFirst(FieldKey.TITLE);
 
             String linuxPath = file.getAbsolutePath().replace("X:", "/mnt/HDD1TB").replace("\\", "/");
 
-            Statement newStatement = connectionObj.createStatement(); // statement creation
+            Statement newStatement = connectionObj.createStatement();
 
-            newStatement.execute("MERGE INTO Artists (name) KEY(name) VALUES ('" + artist.replace("'", "''") + "')");
-            ResultSet rs1 = newStatement
-                    .executeQuery("SELECT id FROM Artists WHERE name = '" + artist.replace("'", "''") + "'");
+            newStatement.execute("MERGE INTO Artists (name) KEY(name) VALUES ('" + artist + "')");
+            ResultSet rs1 = newStatement.executeQuery("SELECT id FROM Artists WHERE name = '" + artist + "'");
             rs1.next();
             int artistId = rs1.getInt(1);
 
-            newStatement.execute(
-                    "MERGE INTO Albums (title, artist_id) KEY(title, artist_id) VALUES ('" + album.replace("'", "''")
-                            + "', " + artistId + ")");
-            ResultSet rs2 = newStatement.executeQuery("SELECT id FROM Albums WHERE title = '" + album.replace("'", "''")
-                    + "' AND artist_id = " + artistId);
+            newStatement.execute("MERGE INTO Albums (title, artist_id) KEY(title, artist_id) VALUES ('" + album + "', " + artistId + ")");
+            ResultSet rs2 = newStatement.executeQuery("SELECT id FROM Albums WHERE title = '" + album + "' AND artist_id = " + artistId);
             rs2.next();
             int albumId = rs2.getInt(1);
 
-            String sql = "MERGE INTO Songs (title, album_id, file_path) KEY(file_path) VALUES (?, ?, ?)";
-            PreparedStatement ps = connectionObj.prepareStatement(sql);
-
-            ps.setString(1, title);
-            ps.setInt(2, albumId);
-            ps.setString(3, linuxPath);
-
-            ps.executeUpdate();
+            newStatement.execute("INSERT INTO Songs (title, album_id, file_path) VALUES ('" + title + "', " + albumId + ", '" + linuxPath + "')");
 
             System.out.println("debug CHECKED " + artist + " - " + title);
 
