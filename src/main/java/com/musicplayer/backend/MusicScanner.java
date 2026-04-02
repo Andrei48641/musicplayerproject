@@ -43,30 +43,32 @@ public class MusicScanner {
             AudioFile audioFile = AudioFileIO.read(file);
             Tag tag = audioFile.getTag();
 
-            String artist = tag.getFirst(FieldKey.ARTIST);
-            String album = tag.getFirst(FieldKey.ALBUM);
-            String title = tag.getFirst(FieldKey.TITLE);
+            Statement stmt = connectionObj.createStatement();
 
+            int artistId = getOrCreateArtist(stmt, tag.getFirst(FieldKey.ARTIST));
+            int albumId = getOrCreateAlbum(stmt, tag.getFirst(FieldKey.ALBUM), artistId);
+            
             String linuxPath = file.getAbsolutePath().replace("X:", "/mnt/HDD1TB").replace("\\", "/");
+            stmt.execute("INSERT INTO Songs (title, album_id, file_path) VALUES ('" + tag.getFirst(FieldKey.TITLE) + "', " + albumId + ", '" + linuxPath + "')");
 
-            Statement newStatement = connectionObj.createStatement();
-
-            newStatement.execute("MERGE INTO Artists (name) KEY(name) VALUES ('" + artist + "')");
-            ResultSet rs1 = newStatement.executeQuery("SELECT id FROM Artists WHERE name = '" + artist + "'");
-            rs1.next();
-            int artistId = rs1.getInt(1);
-
-            newStatement.execute("MERGE INTO Albums (title, artist_id) KEY(title, artist_id) VALUES ('" + album + "', " + artistId + ")");
-            ResultSet rs2 = newStatement.executeQuery("SELECT id FROM Albums WHERE title = '" + album + "' AND artist_id = " + artistId);
-            rs2.next();
-            int albumId = rs2.getInt(1);
-
-            newStatement.execute("INSERT INTO Songs (title, album_id, file_path) VALUES ('" + title + "', " + albumId + ", '" + linuxPath + "')");
-
-            System.out.println("debug CHECKED " + artist + " - " + title);
+            System.out.println("debug CHECKED " + tag.getFirst(FieldKey.ARTIST) + " - " + tag.getFirst(FieldKey.TITLE));
 
         } catch (Exception e) {
             System.err.println("error compiling " + file.getName() + ": " + e.getMessage());
         }
+    }
+
+    private static int getOrCreateArtist(Statement stmt, String name) throws SQLException {
+        stmt.execute("MERGE INTO Artists (name) KEY(name) VALUES ('" + name + "')");
+        ResultSet rs = stmt.executeQuery("SELECT id FROM Artists WHERE name = '" + name + "'");
+        rs.next();
+        return rs.getInt(1);
+    }
+
+    private static int getOrCreateAlbum(Statement stmt, String title, int artistId) throws SQLException {
+        stmt.execute("MERGE INTO Albums (title, artist_id) KEY(title, artist_id) VALUES ('" + title + "', " + artistId + ")");
+        ResultSet rs = stmt.executeQuery("SELECT id FROM Albums WHERE title = '" + title + "' AND artist_id = " + artistId);
+        rs.next();
+        return rs.getInt(1);
     }
 }
