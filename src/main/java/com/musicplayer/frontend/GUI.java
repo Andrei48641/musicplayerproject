@@ -13,10 +13,10 @@ public class GUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new FlowLayout());
 
-        JButton playButton = new JButton("play AC/DC");
+        JButton playButton = new JButton("play");
 
         playButton.addActionListener(e -> {
-            new Thread(() -> AudioPlayer.playSong("Back In Black")).start();
+            new Thread(() -> AudioPlayer.playSong("Six Blade Knife")).start();
         });
 
         add(playButton);
