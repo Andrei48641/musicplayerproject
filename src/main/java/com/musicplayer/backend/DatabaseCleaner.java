@@ -13,7 +13,7 @@ public class DatabaseCleaner {
 
             statement.execute("ALTER TABLE SONGS ALTER COLUMN ID RESTART WITH 1");
             statement.execute("ALTER TABLE ALBUMS ALTER COLUMN ID RESTART WITH 1");
-            statement.execute("ALTER TABLE ARITSTS ALTER COLUMN ID RESTART WITH 1");
+            statement.execute("ALTER TABLE ARTISTS ALTER COLUMN ID RESTART WITH 1");
 
             System.out.println("CONTENTS OF ALL TABLES HAVE BEEN CLEARED");
         } catch (SQLException e) {
