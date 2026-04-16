@@ -5,7 +5,8 @@ import java.sql.*;
 public class DatabaseCleaner {
 
     public static void clean() {
-        try (Connection conn = DatabaseManager.getConnection(); Statement statement = conn.createStatement()) {
+        try (Connection conn = DatabaseManager.getConnection();
+        Statement statement = conn.createStatement()) {
 
             statement.execute("DELETE FROM SONGS");
             statement.execute("DELETE FROM ALBUMS");

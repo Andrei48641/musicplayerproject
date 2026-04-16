@@ -67,7 +67,7 @@ public class MusicScanner {
 
     public static int getOrCreateAlbum(Statement statement, String title, int artistId) throws SQLException {
         statement.execute("MERGE INTO ALBUMS (TITLE, ARTIST_ID) KEY(TITLE, ARTIST_ID) VALUES ('" + title + "', " + artistId + ")");
-        ResultSet rs = statement.executeQuery("SELECT ID FROM ALBUMS WHERE title = '" + title + "' AND ARTIST_ID = " + artistId);
+        ResultSet rs = statement.executeQuery("SELECT ID FROM ALBUMS WHERE TITLE = '" + title + "' AND ARTIST_ID = " + artistId);
         rs.next();
         return rs.getInt(1);
     }

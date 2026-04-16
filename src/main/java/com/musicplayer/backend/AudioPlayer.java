@@ -10,13 +10,12 @@ public class AudioPlayer {
         String linuxPath = "";
 
         try (Connection conn = DatabaseManager.getConnection();
-                PreparedStatement ps = conn.prepareStatement("SELECT file_path FROM Songs WHERE title = ?")) {
+        Statement statement = conn.createStatement()) {
 
-            ps.setString(1, songTitle);
-            ResultSet rs = ps.executeQuery();
+            ResultSet rs = statement.executeQuery("SELECT FILE_PATH FROM SONGS WHERE TITLE = '" + songTitle + "'");
 
             if (rs.next()) {
-                linuxPath = rs.getString("file_path");
+                linuxPath = rs.getString("FILE_PATH");
             }
         } catch (SQLException e) {
             System.err.println("database ERROR " + e.getMessage());
