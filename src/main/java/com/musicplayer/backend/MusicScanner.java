@@ -62,13 +62,13 @@ public class MusicScanner {
         statement.execute("MERGE INTO ARTISTS (name) KEY(name) VALUES ('" + name + "')");
         ResultSet rs = statement.executeQuery("SELECT ID FROM ARTISTS WHERE name = '" + name + "'");
         rs.next();
-        return rs.getInt(1);
+        return rs.getInt("ID");
     }
 
     public static int getOrCreateAlbum(Statement statement, String title, int artistId) throws SQLException {
         statement.execute("MERGE INTO ALBUMS (TITLE, ARTIST_ID) KEY(TITLE, ARTIST_ID) VALUES ('" + title + "', " + artistId + ")");
         ResultSet rs = statement.executeQuery("SELECT ID FROM ALBUMS WHERE TITLE = '" + title + "' AND ARTIST_ID = " + artistId);
         rs.next();
-        return rs.getInt(1);
+        return rs.getInt("ID");
     }
 }
