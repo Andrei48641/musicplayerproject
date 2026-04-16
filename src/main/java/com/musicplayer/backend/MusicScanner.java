@@ -31,8 +31,8 @@ public class MusicScanner {
         for (File item : items) {
             if (item.isDirectory()) {
                 scanFolder(item);
-            } else if (item.getName().toLowerCase().endsWith(".mp3")
-                    || (item.getName().toLowerCase().endsWith(".wav"))) {
+            } else if (item.getName().endsWith(".mp3")
+                    || (item.getName().endsWith(".wav"))) {
                 saveToDatabase(item);
             }
         }
