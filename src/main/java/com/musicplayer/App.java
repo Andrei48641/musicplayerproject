@@ -4,11 +4,11 @@ import com.musicplayer.backend.DatabaseCleaner;
 import com.musicplayer.backend.MusicScanner;
 import com.musicplayer.frontend.GUI;
 
-public class App {
+public class App { //trolololo
     public static void main(String[] args) {
         System.out.println("connecting to raspbery pi database:");
 
-        DatabaseCleaner.clean();
+   //     DatabaseCleaner.clean();
         MusicScanner.startScan();
 
         new GUI();
