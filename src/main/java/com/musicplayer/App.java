@@ -8,7 +8,7 @@ public class App { //trolololo
     public static void main(String[] args) {
         System.out.println("connecting to raspbery pi database:");
 
-   //     DatabaseCleaner.clean();
+        DatabaseCleaner.clean();
         MusicScanner.startScan();
 
         new GUI();
