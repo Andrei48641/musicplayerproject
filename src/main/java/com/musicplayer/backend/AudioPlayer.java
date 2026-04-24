@@ -1,10 +1,10 @@
 package com.musicplayer.backend;
 
-import javazoom.jl.decoder.JavaLayerException;
 import javazoom.jl.player.advanced.AdvancedPlayer;
 import javazoom.jl.player.advanced.PlaybackEvent;
 import javazoom.jl.player.advanced.PlaybackListener;
 
+import javax.swing.SwingUtilities; // Crucial for the Auto-Play callback!
 import java.io.FileInputStream;
 import java.io.BufferedInputStream;
 import java.sql.*;
@@ -18,11 +18,21 @@ public class AudioPlayer {
     private static String currentPath = "";
     private static int pausedFrame = 0;
     private static boolean isPaused = false;
+    
+    // Auto-play and pause logic variables
+    private static boolean manuallyStopped = false;
+    private static Runnable onSongFinishedCallback;
+
+    // Method for the GUI to hand over its callback instructions
+    public static void setOnSongFinishedCallback(Runnable callback) {
+        onSongFinishedCallback = callback;
+    }
 
     public static void playSong(String songTitle) {
-        stopSong();
+        stopSong(); // Kick out the old song before starting a new one
         pausedFrame = 0;
         isPaused = false;
+        manuallyStopped = false; // Reset the flag when a new song starts
 
         currentPath = getPathFromDB(songTitle);
         if (currentPath.isEmpty()) {
@@ -36,23 +46,45 @@ public class AudioPlayer {
     public static void pauseSong() {
         if (mp3Player != null && !isPaused) {
             isPaused = true;
-            mp3Player.stop();
+            manuallyStopped = true; // Prevents the auto-play bug!
+            
+            // Safety net around JLayer's cranky stop method
+            try {
+                mp3Player.stop(); 
+            } catch (Exception e) {
+                System.out.println("Safely ignored JLayer error: " + e.getMessage());
+            }
+            
             System.out.println("Paused at frame: " + pausedFrame);
         }
     }
 
     public static void resumeSong() {
-        if (isPaused && !currentPath.isEmpty()) {
-            isPaused = false;
-            playFromFrame(pausedFrame);
+        if (!currentPath.isEmpty()) {
+            if (isPaused) {
+                isPaused = false;
+                manuallyStopped = false; 
+                playFromFrame(pausedFrame);
+            } else if (mp3Player == null) {
+                // If the song was completely finished, restart it from the beginning!
+                pausedFrame = 0;
+                manuallyStopped = false;
+                playFromFrame(0);
+            }
         }
     }
 
     public static void stopSong() {
         isPaused = false;
         pausedFrame = 0;
+        manuallyStopped = true; // Prevents auto playing when we press stop
+        
         if (mp3Player != null) {
-            mp3Player.stop();
+            try {
+                mp3Player.stop(); // safety net
+            } catch (Exception e) {
+                
+            }
             mp3Player = null;
         }
         if (playerThread != null) {
@@ -76,11 +108,23 @@ public class AudioPlayer {
                         System.out.println("NOW PLAYING from frame: " + startFrame);
                     }
 
-                    @Override
+                  @Override
                     public void playbackFinished(PlaybackEvent e) {
                         // Track which frame we stopped at for pause/resume
                         pausedFrame = startFrame + e.getFrame();
                         System.out.println("Stopped at frame: " + pausedFrame);
+                        
+                        
+                        if (!manuallyStopped) {
+                            mp3Player = null; // stop player
+                            pausedFrame = 0;  // reset
+                            isPaused = false; 
+                            
+                            
+                            if (onSongFinishedCallback != null) {
+                                SwingUtilities.invokeLater(onSongFinishedCallback);
+                            }
+                        }
                     }
                 });
 

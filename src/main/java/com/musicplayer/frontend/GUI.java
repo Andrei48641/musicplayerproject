@@ -23,13 +23,13 @@ public class GUI extends JFrame {
         setLayout(new BorderLayout());
 
         
-       // playlist = AudioPlayer.getPlaylist();
+      playlist = AudioPlayer.getPlaylist();
 
-         playlist = new String[]{"Sultans of Swing", "Lady Writer", "Six Blade Knife", "Romeo and Juliet", "Walk of Life"}; 
-        // ── Menu Bar ──────────────────────────────────────────────
+     //playlist = new String[]{"Sultans of Swing", "Lady Writer", "Six Blade Knife", "Romeo and Juliet", "Walk of Life"}; 
+     // Menu Bar
         JMenuBar menuBar = new JMenuBar();
 
-        JMenu songMenu = new JMenu("Song");
+        JMenu songMenu = new JMenu("Exit");
         JMenuItem exitItem = new JMenuItem("Exit Player");
         exitItem.addActionListener(e -> System.exit(0));
         songMenu.add(exitItem);
@@ -131,10 +131,13 @@ public class GUI extends JFrame {
         });
 
         // previous
-        JButton prevBtn = createIconButton("⏮", 28);
+       JButton prevBtn = createIconButton("⏮", 28);
         prevBtn.addActionListener(e -> {
             if (currentIndex > 0) {
                 startNewSong(currentIndex - 1);
+            } else if (currentIndex == 0 && playlist.length > 0) {
+                // If we are on the first song, loop back to the very last song!
+                startNewSong(playlist.length - 1); 
             }
         });
 
@@ -166,6 +169,7 @@ public class GUI extends JFrame {
         });
 
         // repeat
+
         JButton repeatBtn = createIconButton("🔁", 28);
         repeatBtn.addActionListener(e -> {
             if (currentIndex != -1) {
