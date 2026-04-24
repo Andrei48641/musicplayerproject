@@ -6,11 +6,18 @@ import java.sql.*;
 
 public class AudioPlayer {
 
+    // stop command
+    private static Player mp3Player; 
+
     public static void playSong(String songTitle) {
+        
+        
+        stopSong(); 
+
         String linuxPath = "";
 
         try (Connection conn = DatabaseManager.getConnection();
-        Statement statement = conn.createStatement()) {
+             Statement statement = conn.createStatement()) {
 
             ResultSet rs = statement.executeQuery("SELECT FILE_PATH FROM SONGS WHERE TITLE = '" + songTitle + "'");
 
@@ -30,11 +37,24 @@ public class AudioPlayer {
         String windowsPath = linuxPath.replace("/mnt/HDD1TB", "X:").replace("/", "\\");
         System.out.println("NOW PLAYING: " + windowsPath);
 
-        try (FileInputStream fileToPlay = new FileInputStream(windowsPath)) {
-            Player mp3Player = new Player(fileToPlay);
+        try {
+            
+            FileInputStream fileToPlay = new FileInputStream(windowsPath);
+            
+            
+            mp3Player = new Player(fileToPlay); 
             mp3Player.play();
+            
         } catch (Exception e) {
             System.err.println("ERROR playing: " + e.getMessage());
+        }
+    }
+
+    public static void stopSong() {
+        
+        if (mp3Player != null) {
+            mp3Player.close(); 
+            System.out.println("Music stopped!");
         }
     }
 }
